@@ -48,7 +48,7 @@ XROS_MIN_SDK_VERSION="1.0"
 # Init optional env variables (use available variable or default to empty string)
 CURL_OPTIONS="${CURL_OPTIONS:-}"
 CONFIG_OPTIONS="${CONFIG_OPTIONS:-}"
-
+CONFIG_OPTIONS="${CONFIG_OPTIONS} enable-oqsprovider enable-kem-oqs enable-sig-oqs"
 echo_help()
 {
   echo "Usage: $0 [options...]"
@@ -141,6 +141,8 @@ check_status()
 # Run Configure in build loop
 run_configure()
 {
+  echo "  Configure with OQS..."
+  LOCAL_CONFIG_OPTIONS="${LOCAL_CONFIG_OPTIONS} enable-oqsprovider enable-kem-oqs enable-sig-oqs"
   echo "  Configure..."
   set +e
   if [ "${LOG_VERBOSE}" == "verbose" ]; then
@@ -246,6 +248,7 @@ gpg_validate()
 ARCHS=""
 BRANCH=""
 CLEANUP=""
+WITH_OQS=""
 CONFIG_ENABLE_EC_NISTP_64_GCC_128=""
 CONFIG_DISABLE_BITCODE="true"
 CONFIG_NO_DEPRECATED=""
@@ -276,6 +279,9 @@ case $i in
     ;;
   --ec-nistp-64-gcc-128)
     CONFIG_ENABLE_EC_NISTP_64_GCC_128="true"
+    ;;
+  --with-oqs)  # Add support for the --with-oqs flag
+    WITH_OQS="true"
     ;;
   -h|--help)
     echo_help
@@ -477,13 +483,16 @@ echo "  Build location: ${CURRENTPATH}"
 echo
 
 # Download OpenSSL when not present
-OPENSSL_ARCHIVE_BASE_NAME="openssl-${VERSION}"
+
+# OPENSSL_ARCHIVE_BASE_NAME="openssl-${VERSION}"
+OPENSSL_ARCHIVE_BASE_NAME="oqs-openssl-1.1.1"
 OPENSSL_ARCHIVE_FILE_NAME="${OPENSSL_ARCHIVE_BASE_NAME}.tar.gz"
 OPENSSL_ARCHIVE_SIGNATURE_FILE_EXT=".asc"
 OPENSSL_ARCHIVE_SIGNATURE_FILE_NAME="${OPENSSL_ARCHIVE_FILE_NAME}${OPENSSL_ARCHIVE_SIGNATURE_FILE_EXT}"
 if [ ! -e ${OPENSSL_ARCHIVE_FILE_NAME} ]; then
   echo "Downloading ${OPENSSL_ARCHIVE_FILE_NAME}..."
-  OPENSSL_ARCHIVE_BASE_URL="https://www.openssl.org/source"
+  # OPENSSL_ARCHIVE_BASE_URL="https://www.openssl.org/source"
+  OPENSSL_ARCHIVE_BASE_URL="https://github.com/open-quantum-safe/openssl/archive"
   OPENSSL_ARCHIVE_URL="${OPENSSL_ARCHIVE_BASE_URL}/${OPENSSL_ARCHIVE_FILE_NAME}"
 
   # Check whether file exists here (this is the location of the latest version for each branch)
